@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=1024, user-scalable=no">
+
+	<title>Scalable Configuration for Ruby Apps</title>
+	
+	<!-- Required stylesheet -->
+	<link rel="stylesheet" href="core/deck.core.css">
+	
+	<!-- Extension CSS files go here. Remove or add as needed. -->
+	<link rel="stylesheet" href="extensions/goto/deck.goto.css">
+	<link rel="stylesheet" href="extensions/menu/deck.menu.css">
+	<link rel="stylesheet" href="extensions/navigation/deck.navigation.css">
+	<link rel="stylesheet" href="extensions/status/deck.status.css">
+	<link rel="stylesheet" href="extensions/hash/deck.hash.css">
+	<link rel="stylesheet" href="extensions/scale/deck.scale.css">
+  <link rel="stylesheet" href="extensions/codemirror/deck.codemirror.css">
+
+	<!-- Style theme. More available in /themes/style/ or create your own. -->
+	<link rel="stylesheet" href="themes/style/swiss.css">
+	
+	<!-- Transition theme. More available in /themes/transition/ or create your own. -->
+	<link rel="stylesheet" href="themes/transition/fade.css">
+	
+	<!-- Required Modernizr file -->
+	<script src="modernizr.custom.js"></script>
+</head>
+<body class="deck-container">
+
+<!-- Begin slides. Just make elements with a class of slide. -->
+
+<section class="slide" id='1'>
+	<h1>
+    Scalable Configuration<br />
+    <font size='15'>(why I built and use hierarchical_config)</font>
+    <br />
+    <font size='20'>by Tim Galeckas</font>
+  </h1>
+</section>
+
+<section class="slide">
+	<h3>Scalable Configuration</h3>
+  <ul>
+    <li >Visible</li>
+    <li class='slide'>Static</li>
+    <li class='slide'>Declarative</li>
+    <li class='slide'>Robust</li>
+    <li class='slide'>Intuitive</li>
+  </ul>
+</section>
+
+<section class="slide">
+	<h3>Scalable Configuration is Visible</h3>
+  <ul>
+    <li>In source control</li>
+    <li class='slide'>Should be able to be seen outside the environment it'll be used in:</li>
+    <li>
+    <ul>
+      <li class='slide'>
+        $ rake hierarchical_config:show
+        <div id="dev_config" name="dev_config" class="code" mode="ruby" style="display: none;">Displaying hierarchical config for environment: DEVELOPMENT
+--- 
+:session_store: 
+  :memcache_server: 
+  - 127.0.0.1:11211
+  :store: active_record
+:publishers: 
+  :hostname: publishers.transis.local:3000</div>
+      </li>
+      <li class='slide'>
+        $ rake hierarchical_config:show[production]
+        <div id="dev_config" name="dev_config" class="code" mode="ruby" style="display: none;">Displaying hierarchical config for environment: PRODUCTION
+--- 
+:session_store: 
+  :store: dalli
+  :server: 
+  - db1va:11211
+  :memcache_server: 
+  - 127.0.0.1:11211
+:publishers: 
+  :hostname: publishers.transis.com</div>
+      </li>
+    </ul>
+    </li>
+  </ul>
+</section>
+<section class='slide'>
+	<h3>Scalable Configuration is Static</h3>
+  <ul>
+    <li >Should be loaded once at app start</li>
+    <li class='slide'>Should not be subject to side effects</li>
+    <li class='slide'>ApplicationConfig.contact.phone
+      <br /></br /><p class='slide'>"(312) 281-5552"</p>
+    </li>
+    <li class='slide'>if ApplicationConfig.contact.phone = self.phone_number<br/>
+        &nbsp;&nbsp;raise 'Duplicate Phone Number'<br />
+        end
+      <br/><br/><p class='slide'>TypeError: can't modify frozen HierarchicalConfig::OpenStruct</p>
+    </li>
+  </ul>
+</section>
+<section class='slide'>
+	<h3>Scalable Configuration is Declarative</h3>
+  <ul>
+    <li>
+  <div class='code' style='display:none'>defaults:
+  root:
+    child_a: 1
+    child_b: 2
+    child_c:
+      grandchild_a: 3
+      grandchild_b: 4
+  super_secret_password: !REQUIRED
+  check: true </div>
+    </li>
+    <li class='slide'>
+  <div><div>Throw errors if a configuration option is required and never set</div>
+    <pre>RuntimeError: ["app.super_secret_password is REQUIRED for staging"]</pre></div>
+    </li>
+  </ul>
+</section>
+<section class='slide'>
+	<h3>Scalable Configuration is Robust</h3>
+  <li>Allow defaults over multiple environments</li>
+  <li class='slide'>Allow overrides on a specific box</li>
+  <ul>
+    <li class='slide'>By an overrides file</li>
+    <li class='slide'>By environment variables</li>
+  </ul>
+</section>
+<section class='slide'>
+	<h3>Scalable Configuration is Intuitive</h3>
+  <li>Get the gem: https://github.com/timgaleckas/hierarchical_config</li>
+  <li>config/app.yml
+  <div class='code'>defaults:
+  root:
+    child_a: 1
+    child_b: 2
+    child_c:
+      grandchild_a: 3
+      grandchild_b: 4
+  super_secret_password: !REQUIRED
+  check: true
+
+defaults[development,test]:
+  super_secret_password: not_that_secret
+
+development:
+  root:
+    child_b: 8
+
+env_vars:
+  super_secret_password: SUPER_SECRET
+env_vars[production]:
+  super_secret_password: SUPER_DUPER_SECRET </div>
+  </li>
+  <li>config/initializers/app_config.rb
+  <div class='code'>AppConfig = HierarchicalConfig.load_config( 'app', Rails.root.join('config'), Rails.env )</div>
+  </li>
+
+  
+</section>
+
+<!-- End slides. -->
+
+
+<!-- Begin extension snippets. Add or remove as needed. -->
+
+<!-- deck.navigation snippet -->
+<a href="#" class="deck-prev-link" title="Previous">&#8592;</a>
+<a href="#" class="deck-next-link" title="Next">&#8594;</a>
+
+<!-- deck.status snippet -->
+<p class="deck-status">
+	<span class="deck-status-current">&nbsp;</span>
+	/
+	<span class="deck-status-total">&nbsp;</span>
+</p>
+
+<!-- deck.goto snippet -->
+<form action="." method="get" class="goto-form">
+	<label for="goto-slide">Go to slide:</label>
+	<input type="text" name="slidenum" id="goto-slide" list="goto-datalist">
+	<datalist id="goto-datalist"></datalist>
+	<input type="submit" value="Go">
+</form>
+
+<!-- deck.hash snippet -->
+<a href="." title="Permalink to this slide" class="deck-permalink">#</a>
+
+<!-- End extension snippets. -->
+
+
+<!-- Required JS files. -->
+<script src="jquery-1.7.2.min.js"></script>
+<script src="core/deck.core.js"></script>
+
+<!-- Extension JS files. Add or remove as needed. -->
+<script src="core/deck.core.js"></script>
+<script src="extensions/hash/deck.hash.js"></script>
+<script src="extensions/menu/deck.menu.js"></script>
+<script src="extensions/goto/deck.goto.js"></script>
+<script src="extensions/status/deck.status.js"></script>
+<script src="extensions/navigation/deck.navigation.js"></script>
+<script src="extensions/scale/deck.scale.js"></script>
+
+<!-- Base codemiror code -->
+<script src="extensions/codemirror/codemirror.js"></script>
+
+<!-- Syntax highlighting Modes -->
+
+<!-- javascript -->
+<script src="extensions/codemirror/mode/javascript/javascript.js"></script>
+
+<!-- html mode (note html mode requires xml, css and javascript) -->
+<script src="extensions/codemirror/mode/xml/xml.js"></script>
+<script src="extensions/codemirror/mode/css/css.js"></script>
+<script src="extensions/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+
+<!-- Plugin code -->
+<script src="extensions/codemirror/deck.codemirror.js"></script>
+
+<!-- Initialize the deck. You can put this in an external file if desired. -->
+<script>
+	$(function() {
+		$.deck('.slide');
+	});
+</script>
+</body>
+</html>
